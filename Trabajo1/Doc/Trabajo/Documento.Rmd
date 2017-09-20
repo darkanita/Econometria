@@ -1,0 +1,62 @@
+---
+title: "Econometría Financiera"
+subtitle: "Trabajo 1 - AR(1) Binomial Negativa"
+author: "Ana María López - Pedro Pablo Villegas"
+date: "September, 2017"
+output: pdf_document
+---
+
+```{r load myData, include=FALSE}
+load(paste("D:/UNAL/Econometría Financiera/Trabajos/Econometria/myData.RData"))
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+k1 = kernel("daniell", 5)  # a long moving average
+k2 = kernel("modified.daniell", 5)  # and a short one
+k3 = kernel("daniell", 3)
+k4 = kernel("modified.daniell", c(9,9))
+#--------simular el modelo
+# N(x) ~ Bin(x,alpha*p) 
+# Wj ~ iid Geo(alpha/(alpha+1))
+# Xn = suma(Wj,j=1,...,N(Xn-1))
+# Zn ~ iid BN(alpha/(alpha+1),v)
+# v > 0, 0 < p < 1, x > 0 
+
+#--------parametros del modelo
+v = 100 
+p = 0.6
+alpha = 0.8
+
+Xn <- NA #inicializo la Variable
+n = 2500 # Cuantos Datos?
+set.seed(123) #Fija la semilla: produce
+
+Xn[1]=300
+for(j in 2:n){
+  Zn = rnbinom(1,v,alpha/(alpha+1))
+  Wj = rgeom(rbinom(1,Xn[j-1],alpha*p),alpha/(alpha+1))
+  Xn[j] = sum(Wj) + Zn
+}
+```
+
+## INTRODUCCIÓN
+
+El presente trabajo presenta un análisis de una serie de primer orden autoregresiva (AR1) con binomial negativa y marginales geometricas.  
+
+--- aca va la introducción
+
+## DESARROLLO
+
+1. El modelo a simular es un proceso autoregresivo que tiene distribuciones marginales binomial negativa.  Este se encuentra definido en Al-Osh and Aly (1992).  Se tiene una variable aleatoria $N \epsilon \{0,1,...\}$ que se distribuye $Binomial Negativa (BN)$ con parámetros $(prob = p, size = v)$ si su densidad esta dada por: $$\mathbb{P}(N = k) = \frac{\Gamma(k+v)}{\Gamma(v)k!}p^v(1-p)^k$$ donde $v>0, 0<p<1$ y $\Gamma(z)$ es la función Gamma. La distribución Geométrica de parámetro $p$ corresponde a una $BN(p,1)$. 
+
+
+Escriba la fórmula del modelo y con base en ésta, escriba un programa en R que simule una trayectoria de longitud dada. Escoger valores de los parámetros de acuerdo a la definición del proceso. Reporte un gráfico la serie. Muestra reversión en la media?, la varianza constante?, Repetir con otro conjunto de parámetros. Cómo varía el proceso?.
+
+
+```{r , fig.width=3, fig.height=3, fig.align='center',include=FALSE}
+#boxplot(mazda2$Precio/1000000)
+```
+
+
+## CONCLUSIONES
