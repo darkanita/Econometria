@@ -72,6 +72,7 @@ n = 2500 # Cuantos Datos?
 set.seed(123) #Fija la semilla: produce
 
 Xn[1]=300
+Xn[1]= rnbinom(1,v,(alpha*(1-p))/(1+alpha*(1-p)))
 
 for(j in 2:n){
   
@@ -167,8 +168,8 @@ require(tsDyn)
 lag.plot(Xn, lags=3, layout=c(1,3))
 
 #Lags 3 es las parejas Layout es que lo pongan en una fila las 3 graficas.
-
-
+install.packages("tsDyn")
+require(tsDyn)
 #--------otras ventanas m?vil varianza
 install.packages("TTR")
 require(TTR)

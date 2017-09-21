@@ -1,0 +1,35 @@
+---
+title: "Trabajo No 2 de Econometría Financiera"
+subtitle: "Filtros lineales, Procesos ARMA, SARMA"
+author: "Ana María López - Pedro Pablo Villegas"
+date: "Octubre, 2017"
+citation_package: natbib
+bibliography: Trabajo2.bib
+biblio-style: apalike
+output: pdf_document
+---
+
+```{r load myData, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Estructura de Directorios
+dir.principal  <- '../'
+dir.funciones  <- '../RScripts'
+dir.markdown  <- '../RMarkdown'
+dir.input      <- '../Data/In/'
+dir.output     <- '../Data/Out/'
+load(paste(dir.principal,"myData.RData",sep=""))
+```
+
+## REFERENCIAS
+
+
+
+
+
+
+
+
+
+
+
+

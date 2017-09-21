@@ -7,7 +7,7 @@ output: pdf_document
 ---
 
 ```{r load myData, include=FALSE}
-load(paste("D:/UNAL/Econometría Financiera/Trabajos/Econometria/myData.RData"))
+load(paste("D:/UNAL/Econometria Financiera/Trabajos/Econometria/myData.RData"))
 ```
 
 ```{r setup, include=FALSE}
@@ -22,22 +22,7 @@ k4 = kernel("modified.daniell", c(9,9))
 # Xn = suma(Wj,j=1,...,N(Xn-1))
 # Zn ~ iid BN(alpha/(alpha+1),v)
 # v > 0, 0 < p < 1, x > 0 
-
-#--------parametros del modelo
-v = 100 
-p = 0.6
-alpha = 0.8
-
 Xn <- NA #inicializo la Variable
-n = 2500 # Cuantos Datos?
-set.seed(123) #Fija la semilla: produce
-
-Xn[1]=300
-for(j in 2:n){
-  Zn = rnbinom(1,v,alpha/(alpha+1))
-  Wj = rgeom(rbinom(1,Xn[j-1],alpha*p),alpha/(alpha+1))
-  Xn[j] = sum(Wj) + Zn
-}
 ```
 
 ## INTRODUCCIÓN
@@ -48,15 +33,494 @@ El presente trabajo presenta un análisis de una serie de primer orden autoregre
 
 ## DESARROLLO
 
-1. El modelo a simular es un proceso autoregresivo que tiene distribuciones marginales binomial negativa.  Este se encuentra definido en Al-Osh and Aly (1992).  Se tiene una variable aleatoria $N \epsilon \{0,1,...\}$ que se distribuye $Binomial Negativa (BN)$ con parámetros $(prob = p, size = v)$ si su densidad esta dada por: $$\mathbb{P}(N = k) = \frac{\Gamma(k+v)}{\Gamma(v)k!}p^v(1-p)^k$$ donde $v>0, 0<p<1$ y $\Gamma(z)$ es la función Gamma. La distribución Geométrica de parámetro $p$ corresponde a una $BN(p,1)$. 
+1. Escriba la fórmula del modelo y con base en ésta, escriba un programa en R que simule una trayectoria de longitud dada. Escoger valores de los parámetros de acuerdo a la definición del proceso. Reporte un gráfico la serie. Muestra reversión en la media?, la varianza constante?, Repetir con otro conjunto de parámetros. Cómo varía el proceso?.$\\$
+El proceso a simular es un autoregresivo que tiene distribuciones marginales binomial negativa.  Este se encuentra definido en Al-Osh and Aly (1992).  Se tiene una variable aleatoria $N \in \{0,1,...\}$ que se distribuye $Binomial Negativa (BN)$ con parámetros $(prob = p, size = v)$ si su densidad esta dada por: $$\mathbb{P}(N = k) = \frac{\Gamma(k+v)}{\Gamma(v)k!}p^v(1-p)^k$$ donde $v>0, 0<p<1$ y $\Gamma(z)$ es la función Gamma. La distribución Geométrica de parámetro $p$ corresponde a una $BN(p,1)$. $\\\\$
+Suponga que para cada valor $x>0$, la variable aleatoria $N(x)$ se distribuye $Binomial$, $N(x) \thicksim Bin(x,\alpha p)$ donde $0<\alpha<1$ es otro parámetro. El proceso $X=\{X_{n},n \in \mathbb{N}_{0}\}$ se define por (ver Al-Osh and Aly (1992)) $$X_{n}=\sum_{j=1}^{N(X_{n-1})}W_{j}+Z_{n}$$ donde $$W_{j} \thicksim iidGeo(\alpha/(\alpha+1))$$ $$Z_{n} \thicksim iid BN(\alpha/(\alpha+1),v)$$ $\\\\$
+Se realizo simulaciones del proceso con diferentes parametros y condiciones iniciales, en el primer caso se definieron los parametros de la siguiente manera: $$v=100, p=0.6, \alpha=0.8, X_{0}=2$$
+A continuación se ilustra el resultado de esta primera simulación:
+```{r , fig.align='center', include=FALSE}
+#--------parametros del modelo
+v = 100 
+p = 0.6
+alpha = 0.8
+Xn[1]=2
 
+n = 2500 # Cuantos Datos?
+set.seed(123) #Fija la semilla: produce
 
-Escriba la fórmula del modelo y con base en ésta, escriba un programa en R que simule una trayectoria de longitud dada. Escoger valores de los parámetros de acuerdo a la definición del proceso. Reporte un gráfico la serie. Muestra reversión en la media?, la varianza constante?, Repetir con otro conjunto de parámetros. Cómo varía el proceso?.
-
-
-```{r , fig.width=3, fig.height=3, fig.align='center',include=FALSE}
-#boxplot(mazda2$Precio/1000000)
+for(j in 2:n){
+  Zn = rnbinom(1,v,alpha/(alpha+1))
+  Wj = rgeom(rbinom(1,Xn[j-1],alpha*p),alpha/(alpha+1))
+  Xn[j] = sum(Wj) + Zn
+}
 ```
 
+```{r ,  fig.width=6, fig.height=5, fig.align='center', echo=FALSE}
+par(mfrow=c(2,2))
+ts.plot(Xn,type="l")
+rhok = acf(Xn,90,ci.type="ma")$acf
+Vk = (1-rhok)/(1-rhok[2])
+plot(Vk)
+plot(density(Xn))
+```
+Al definir $X_{0}=2$ se ilustra en la grafica $X_{n}$ un cambio brusco en la grafica del $X_{0}$ al $X_{1}$,  lo cual nos indica que estamos tomando un valor $X_{0}$ muy pequeño, sin embargo el proceso se estabiliza al instante, oscilando aproximadamente entre $200$ y $400$, teniendo encuenta que el proceso en su gráfica de densidad e incluso en la grafica de $X_{n}$ nos indica que la media se encuentra apróximadamente en $300$, también se evidencia que este valor inicial nos genera un dato atipico generandonos una funcion de densidad normal con asimetria negativa. $\\$
+Ahora vamos a realizar nuevamente la simulación para validar el comportamiento del proceso si definimos esta punto inicial $X_{0}=300$, el resultado de la simulación se ilustra a continuación:
+```{r , fig.align='center', include=FALSE}
+#--------parametros del modelo
+v = 100 
+p = 0.6
+alpha = 0.8
+Xn[1]=300
+
+n = 2500 # Cuantos Datos?
+set.seed(123) #Fija la semilla: produce
+
+for(j in 2:n){
+  Zn = rnbinom(1,v,alpha/(alpha+1))
+  Wj = rgeom(rbinom(1,Xn[j-1],alpha*p),alpha/(alpha+1))
+  Xn[j] = sum(Wj) + Zn
+}
+```
+
+```{r ,  fig.width=6, fig.height=5, fig.align='center', echo=FALSE}
+par(mfrow=c(2,2))
+ts.plot(Xn,type="l")
+rhok = acf(Xn,90,ci.type="ma")$acf
+Vk = (1-rhok)/(1-rhok[2])
+plot(Vk)
+plot(density(Xn))
+```
+En este resultado nos encontramos una funcion de densidad más parecida a la normal, $X_{n}$ no evidencia cambios bruscos y sigue oscilando apróximadamente entre $200$ y $400$.  Ahora bien se desea demostrar que sucede si se define el comportamiento de $X_{0} \thicksim BN(\frac{\alpha(1-p)}{(1+\alpha(1-p))},v)$, el resultado obtenido para esta simulación es el siguiente:
+
+```{r , include=FALSE}
+#--------parametros del modelo
+v = 100 
+p = 0.6
+alpha = 0.8
+Xn[1]= rnbinom(1,v,(alpha*(1-p))/(1+alpha*(1-p)))
+
+n = 2500 # Cuantos Datos?
+set.seed(123) #Fija la semilla: produce
+
+for(j in 2:n){
+  Zn = rnbinom(1,v,alpha/(alpha+1))
+  Wj = rgeom(rbinom(1,Xn[j-1],alpha*p),alpha/(alpha+1))
+  Xn[j] = sum(Wj) + Zn
+}
+```
+
+```{r ,  fig.width=6, fig.height=5, fig.align='center', echo=FALSE}
+par(mfrow=c(2,2))
+ts.plot(Xn,type="l")
+rhok = acf(Xn,90,ci.type="ma")$acf
+Vk = (1-rhok)/(1-rhok[2])
+plot(Vk)
+plot(density(Xn))
+```
+Realizando esta simulación podemos decir que el $X_{n}$ tiene la misma distribución de nuestro proceso, es decir el proceso tiene una distribución invariante. Teniendo ya estabilizado el proceso en el momento de definir nuestro valor inicial, vamos a validar que sucede con el proceso cuando se realiza modificaciones en los parametros que usa. $\\$
+Vamos a iniciar realizando cambios con el parametro $v$ el cual se encuentra definido de la siguiente manera: $v>0$, para la simulación se tomo este valor en $100$, sin embargo se desea identificar que sucede si se toma un valor muy cercano a cero y que sucede a medida que este va creciendo.$\\$  
+A continuación se ilustra el comportamiento del proceso cuando se trabaja con los siguientes parametros: $$v=1, p=0.6, \alpha=0.8, X_{0}=\thicksim BN(\frac{\alpha(1-p)}{(1+\alpha(1-p))},v)$$
+```{r , include=FALSE}
+#--------parametros del modelo
+v = 1 
+p = 0.6
+alpha = 0.8
+Xn[1]= rnbinom(1,v,(alpha*(1-p))/(1+alpha*(1-p)))
+
+n = 2500 # Cuantos Datos?
+set.seed(123) #Fija la semilla: produce
+
+for(j in 2:n){
+  Zn = rnbinom(1,v,alpha/(alpha+1))
+  Wj = rgeom(rbinom(1,Xn[j-1],alpha*p),alpha/(alpha+1))
+  Xn[j] = sum(Wj) + Zn
+}
+```
+
+```{r ,  fig.width=6, fig.height=5, fig.align='center', echo=FALSE}
+par(mfrow=c(2,2))
+ts.plot(Xn,type="l")
+rhok = acf(Xn,90,ci.type="ma")$acf
+Vk = (1-rhok)/(1-rhok[2])
+plot(Vk)
+plot(density(Xn))
+```
+Modificando el parametro $v$ se evidencia que se mueve la media de nuestro proceso, siendo esta muy cercana a cero, sin embargo la varianza sigue siendo constante en el tiempo, adicionan en la densidad validamos que nuestra media es cercana a cero y nos genera una normal con asimetria positiva.  Ahora realizaremos la simulación del proceso con los siguiente parametros.
+
+$$v=50, p=0.6, \alpha=0.8, X_{0}=\thicksim BN(\frac{\alpha(1-p)}{(1+\alpha(1-p))},v)$$
+```{r , include=FALSE}
+#--------parametros del modelo
+v = 50 
+p = 0.6
+alpha = 0.8
+Xn[1]= rnbinom(1,v,(alpha*(1-p))/(1+alpha*(1-p)))
+
+n = 2500 # Cuantos Datos?
+set.seed(123) #Fija la semilla: produce
+
+for(j in 2:n){
+  Zn = rnbinom(1,v,alpha/(alpha+1))
+  Wj = rgeom(rbinom(1,Xn[j-1],alpha*p),alpha/(alpha+1))
+  Xn[j] = sum(Wj) + Zn
+}
+```
+
+```{r ,  fig.width=6, fig.height=5, fig.align='center', echo=FALSE}
+par(mfrow=c(2,2))
+ts.plot(Xn,type="l")
+rhok = acf(Xn,90,ci.type="ma")$acf
+Vk = (1-rhok)/(1-rhok[2])
+plot(Vk)
+plot(density(Xn))
+```
+Tomando $v=10$ ya podemos ver la serie de tiempo con sus bandas, en la anterior al estar tan cercana la media a cero no se evidenciaba la oscilación entre dos bandas.  Por lo cual a medida que vamos aumentando el valor de $v$ la media aumenta. A continuación tomamos un valor mucho mas grande que el usado inicialmente ($v=100$):
+
+$$v=300, p=0.6, \alpha=0.8, X_{0}=\thicksim BN(\frac{\alpha(1-p)}{(1+\alpha(1-p))},v)$$
+```{r , include=FALSE}
+#--------parametros del modelo
+v = 300 
+p = 0.6
+alpha = 0.8
+Xn[1]= rnbinom(1,v,(alpha*(1-p))/(1+alpha*(1-p)))
+
+n = 2500 # Cuantos Datos?
+set.seed(123) #Fija la semilla: produce
+
+for(j in 2:n){
+  Zn = rnbinom(1,v,alpha/(alpha+1))
+  Wj = rgeom(rbinom(1,Xn[j-1],alpha*p),alpha/(alpha+1))
+  Xn[j] = sum(Wj) + Zn
+}
+```
+
+```{r ,  fig.width=6, fig.height=5, fig.align='center', echo=FALSE}
+par(mfrow=c(2,2))
+ts.plot(Xn,type="l")
+rhok = acf(Xn,90,ci.type="ma")$acf
+Vk = (1-rhok)/(1-rhok[2])
+plot(Vk)
+plot(density(Xn))
+```
+
+De tal manera modificar este parametro $v$ nos modifica la media del proceso, valores muy cercanos a 0 nos muestra una función de densidad con asimetria fuerte, ahora bien valores mas grandes, nos va evidenciando una función de densidad mas simetrica. A continuación un valor de $v$ mayor;
+
+$$v=3000, p=0.6, \alpha=0.8, X_{0}=\thicksim BN(\frac{\alpha(1-p)}{(1+\alpha(1-p))},v)$$
+```{r , include=FALSE}
+#--------parametros del modelo
+v = 3000 
+p = 0.6
+alpha = 0.8
+Xn[1]= rnbinom(1,v,(alpha*(1-p))/(1+alpha*(1-p)))
+
+n = 2500 # Cuantos Datos?
+set.seed(123) #Fija la semilla: produce
+
+for(j in 2:n){
+  Zn = rnbinom(1,v,alpha/(alpha+1))
+  Wj = rgeom(rbinom(1,Xn[j-1],alpha*p),alpha/(alpha+1))
+  Xn[j] = sum(Wj) + Zn
+}
+```
+
+```{r ,  fig.width=6, fig.height=5, fig.align='center', echo=FALSE}
+par(mfrow=c(2,2))
+ts.plot(Xn,type="l")
+rhok = acf(Xn,90,ci.type="ma")$acf
+Vk = (1-rhok)/(1-rhok[2])
+plot(Vk)
+plot(density(Xn))
+```
+
+En los diferentes valores de $v$ simulados, notamos que este solo nos modifica la media, acorde a esta la funcion de densidad puede tener una simetria positiva fuerte (cuando $v$ es cercano a cero) o tender a ser simetrica cuando la media es mucho mayor a cero, modificando este parametro el proceso muestra una reversion a la media dentro de unas bandas, la varianza sigue tendiendo a una constante lo cual nos indica que hay evidencia que es estacional en covarianza. Adicional se evidencia que en todos los casos 6 resagos significativos positivos lo cual indica que el proceso esta muy correlacionado. $\\$
+Ahora el parametro a analizar es el $p$, este parametro esta definido así: $0<p<1$, por lo cual vamos a validar que sucede cuando tiende a cero y cuando tiende a 1.  A continuación el resultado de la simulación del proceso:
+$$v=300, p=0.1, \alpha=0.8, X_{0}=\thicksim BN(\frac{\alpha(1-p)}{(1+\alpha(1-p))},v)$$
+```{r , include=FALSE}
+#--------parametros del modelo
+v = 300 
+p = 0.1
+alpha = 0.8
+Xn[1]= rnbinom(1,v,(alpha*(1-p))/(1+alpha*(1-p)))
+
+n = 2500 # Cuantos Datos?
+set.seed(123) #Fija la semilla: produce
+
+for(j in 2:n){
+  Zn = rnbinom(1,v,alpha/(alpha+1))
+  Wj = rgeom(rbinom(1,Xn[j-1],alpha*p),alpha/(alpha+1))
+  Xn[j] = sum(Wj) + Zn
+}
+```
+
+```{r ,  fig.width=6, fig.height=5, fig.align='center', echo=FALSE}
+par(mfrow=c(2,2))
+ts.plot(Xn,type="l")
+rhok = acf(Xn,90,ci.type="ma")$acf
+Vk = (1-rhok)/(1-rhok[2])
+plot(Vk)
+plot(density(Xn))
+```
+Al modificar este parametro $p$ a un valor muy cercano a cero, notamos que los resagos significativos disminuyen y el proceso tiene mas oscilación, la varianza sigue tendiendo a una constante.  Ahora miremos que sucede con un valor $p$ más grande:
+
+$$v=300, p=0.9, \alpha=0.8, X_{0}=\thicksim BN(\frac{\alpha(1-p)}{(1+\alpha(1-p))},v)$$
+```{r , include=FALSE}
+#--------parametros del modelo
+v = 300 
+p = 0.9
+alpha = 0.8
+Xn[1]= rnbinom(1,v,(alpha*(1-p))/(1+alpha*(1-p)))
+
+n = 2500 # Cuantos Datos?
+set.seed(123) #Fija la semilla: produce
+
+for(j in 2:n){
+  Zn = rnbinom(1,v,alpha/(alpha+1))
+  Wj = rgeom(rbinom(1,Xn[j-1],alpha*p),alpha/(alpha+1))
+  Xn[j] = sum(Wj) + Zn
+}
+```
+
+```{r ,  fig.width=6, fig.height=5, fig.align='center', echo=FALSE}
+par(mfrow=c(2,2))
+ts.plot(Xn,type="l")
+rhok = acf(Xn,90,ci.type="ma")$acf
+Vk = (1-rhok)/(1-rhok[2])
+plot(Vk)
+plot(density(Xn))
+```
+Al tener un valor de $p$ mas cercano a uno, muestra un proceso con menos oscilaciones, la varianza se demora mas para estabilizarse y los resagos positivos aumentan.  Teniendo un valor intermedio el resulado es el siguiente:
+
+$$v=300, p=0.5, \alpha=0.8, X_{0}=\thicksim BN(\frac{\alpha(1-p)}{(1+\alpha(1-p))},v)$$
+```{r , include=FALSE}
+#--------parametros del modelo
+v = 300 
+p = 0.5
+alpha = 0.8
+Xn[1]= rnbinom(1,v,(alpha*(1-p))/(1+alpha*(1-p)))
+
+n = 2500 # Cuantos Datos?
+set.seed(123) #Fija la semilla: produce
+
+for(j in 2:n){
+  Zn = rnbinom(1,v,alpha/(alpha+1))
+  Wj = rgeom(rbinom(1,Xn[j-1],alpha*p),alpha/(alpha+1))
+  Xn[j] = sum(Wj) + Zn
+}
+```
+
+```{r ,  fig.width=6, fig.height=5, fig.align='center', echo=FALSE}
+par(mfrow=c(2,2))
+ts.plot(Xn,type="l")
+rhok = acf(Xn,90,ci.type="ma")$acf
+Vk = (1-rhok)/(1-rhok[2])
+plot(Vk)
+plot(density(Xn))
+```
+
+Por lo tanto el parametro $p$ es el parametro que nos permite modificar las oscilaciones de nuestro proceso, entre más cercano a cero oscila mas rapido y la varianza tiende a una constante rapidamente, en valores que tienden a 1 oscila mas lento y la varianza tiende a una constante mas lento.  En todos los casos sigue mostrando una reversión a la media entre dos bandas.$\\$
+Ahora vamos a mirar que sucede moviendo el $\alpha$, este parametro esta definido así: $0<\alpha<1$, así que vamos a validar como varía el proceso con un valor muy cercano a cero, el resultado obtenido es el siguiente:
+
+$$v=300, p=0.5, \alpha=0.1, X_{0}=\thicksim BN(\frac{\alpha(1-p)}{(1+\alpha(1-p))},v)$$
+```{r , include=FALSE}
+#--------parametros del modelo
+v = 300 
+p = 0.5
+alpha = 0.1
+Xn[1]= rnbinom(1,v,(alpha*(1-p))/(1+alpha*(1-p)))
+
+n = 2500 # Cuantos Datos?
+set.seed(123) #Fija la semilla: produce
+
+for(j in 2:n){
+  Zn = rnbinom(1,v,alpha/(alpha+1))
+  Wj = rgeom(rbinom(1,Xn[j-1],alpha*p),alpha/(alpha+1))
+  Xn[j] = sum(Wj) + Zn
+}
+```
+
+```{r ,  fig.width=6, fig.height=5, fig.align='center', echo=FALSE}
+par(mfrow=c(2,2))
+ts.plot(Xn,type="l")
+rhok = acf(Xn,90,ci.type="ma")$acf
+Vk = (1-rhok)/(1-rhok[2])
+plot(Vk)
+plot(density(Xn))
+```
+Al modificar este parametro $\alpha$, el proceso continua mostrando estacionario en covarianza, ahora evidenciamos que las bandas en las que oscila nuestro proceso son mas amplias, ahora realizaremos el mismo proceso pero tomando un valor de $\alpha$ intermedio:
+
+$$v=300, p=0.5, \alpha=0.5, X_{0}=\thicksim BN(\frac{\alpha(1-p)}{(1+\alpha(1-p))},v)$$
+```{r , include=FALSE}
+#--------parametros del modelo
+v = 300 
+p = 0.5
+alpha = 0.5
+Xn[1]= rnbinom(1,v,(alpha*(1-p))/(1+alpha*(1-p)))
+
+n = 2500 # Cuantos Datos?
+set.seed(123) #Fija la semilla: produce
+
+for(j in 2:n){
+  Zn = rnbinom(1,v,alpha/(alpha+1))
+  Wj = rgeom(rbinom(1,Xn[j-1],alpha*p),alpha/(alpha+1))
+  Xn[j] = sum(Wj) + Zn
+}
+```
+
+```{r ,  fig.width=6, fig.height=5, fig.align='center', echo=FALSE}
+par(mfrow=c(2,2))
+ts.plot(Xn,type="l")
+rhok = acf(Xn,90,ci.type="ma")$acf
+Vk = (1-rhok)/(1-rhok[2])
+plot(Vk)
+plot(density(Xn))
+```
+Las bandas van estrechandose, por lo cual esperamos que para un valor de $\alpha$ cercano a uno nuestro proceso oscilara entre unas bandas mas cercanas:
+
+$$v=300, p=0.5, \alpha=0.9, X_{0}=\thicksim BN(\frac{\alpha(1-p)}{(1+\alpha(1-p))},v)$$
+```{r , include=FALSE}
+#--------parametros del modelo
+v = 300 
+p = 0.5
+alpha = 0.9
+Xn[1]= rnbinom(1,v,(alpha*(1-p))/(1+alpha*(1-p)))
+
+n = 2500 # Cuantos Datos?
+set.seed(123) #Fija la semilla: produce
+
+for(j in 2:n){
+  Zn = rnbinom(1,v,alpha/(alpha+1))
+  Wj = rgeom(rbinom(1,Xn[j-1],alpha*p),alpha/(alpha+1))
+  Xn[j] = sum(Wj) + Zn
+}
+```
+
+```{r ,  fig.width=6, fig.height=5, fig.align='center', echo=FALSE}
+par(mfrow=c(2,2))
+ts.plot(Xn,type="l")
+rhok = acf(Xn,90,ci.type="ma")$acf
+Vk = (1-rhok)/(1-rhok[2])
+plot(Vk)
+plot(density(Xn))
+```
+El proceso sigue mostrando estacionario en covarianza, las varianzas tienden a una constante y nuestro parametro evaluado nos evidencia que es el que nos permite manejar el ancho de las bandas de oscilación.
+
+2. Estimar la autocovarianza (fac). Sobresalen algunas autocorrelaciones de las bandas de Bartlett (en azul)?. Por el contrario, es ruido blanco?. Estimar a fac del cuadrado para el caso en el cual la serie aparente ser un ruido blanco. Si se sale de las bandas entonces es ruido blanco tipo ARCH ó GARCH.
+
+Los parametros que se definieron para simular el proceso son los siguientes:
+$$v=300, p=0.5, \alpha=0.5, X_{0}=\thicksim BN(\frac{\alpha(1-p)}{(1+\alpha(1-p))},v)$$
+
+```{r , include=FALSE}
+#--------parametros del modelo
+v = 300 
+p = 0.5
+alpha = 0.5
+Xn[1]= rnbinom(1,v,(alpha*(1-p))/(1+alpha*(1-p)))
+
+n = 2500 # Cuantos Datos?
+set.seed(123) #Fija la semilla: produce
+
+for(j in 2:n){
+  Zn = rnbinom(1,v,alpha/(alpha+1))
+  Wj = rgeom(rbinom(1,Xn[j-1],alpha*p),alpha/(alpha+1))
+  Xn[j] = sum(Wj) + Zn
+}
+```
+
+```{r ,  fig.width=6, fig.height=5, fig.align='center', echo=FALSE}
+par(mfrow=c(2,1))
+rhok = acf(Xn,90,ci.type="ma")$acf
+rhokp = pacf(Xn,90,ci.type="ma")$pacf
+```
+La grafica de autocorrelación FAC nos muestra que es una serie autocorrelacionada, no podemos decir que el residuo estructural es ruido blanco, se evidencia una dinámica autorregresiva que se debe modelar, por ejemplo mediante un proceso ARMA, para aprovechar ta dinámica con el fin de mejorar los pronósticos estructurales.$\\$
+En la FACP se observa $p$ valores significativos, en este caso $1$, por fuera de las bandas de Bartlett, y un patron decreciente en la FAC lo cual indica que puede tratarse de una $AR(p)$.
+
+3. Estimar la densidad espectral. Conclusiones posibles: ruido blanco (densidad constante). Unas frecuencias bajas dominantes visibles (caen en el intervalo de confianza, situado en azul a la derecha de la gráfica), puede significar una dinámica autoregresiva.
+
+Los parametros que se definieron para simular el proceso son los siguientes:
+$$v=300, p=0.5, \alpha=0.5, X_{0}=\thicksim BN(\frac{\alpha(1-p)}{(1+\alpha(1-p))},v)$$
+```{r , include=FALSE}
+#--------parametros del modelo
+v = 300 
+p = 0.5
+alpha = 0.5
+Xn[1]= rnbinom(1,v,(alpha*(1-p))/(1+alpha*(1-p)))
+
+n = 2500 # Cuantos Datos?
+set.seed(123) #Fija la semilla: produce
+
+for(j in 2:n){
+  Zn = rnbinom(1,v,alpha/(alpha+1))
+  Wj = rgeom(rbinom(1,Xn[j-1],alpha*p),alpha/(alpha+1))
+  Xn[j] = sum(Wj) + Zn
+}
+```
+
+```{r ,  fig.width=4, fig.height=5, fig.align='center', echo=FALSE}
+par(mfrow=c(2,1))
+spec.pgram(Xn, k1, ci = 0.8) #Es un pasabajo se tiene el intervalo de confianza
+spec.pgram(Xn, k3, ci = 0.8)
+```
+ Se evidencia que el proceso tiene un comportamiento de filtro pasabajo y se tiene el intervalo de confiansa, alcanza a mostrar unas frecuencias menores y unas mayores.
+
+4. Estimar la media y la varianza en una muestra creciente. Si las gráficas se estabilizan alrededor de un valor, puede ser evidencia de estacionariedad. Por el contrario, si no se estabilizan, es porque el proceso no es estacionario en covarianza. $\\$
+Los parametros que se definieron para simular el proceso son los siguientes:
+$$v=300, p=0.5, \alpha=0.5, X_{0}=\thicksim BN(\frac{\alpha(1-p)}{(1+\alpha(1-p))},v)$$
+
+```{r , include=FALSE}
+#--------parametros del modelo
+v = 300 
+p = 0.5
+alpha = 0.5
+Xn[1]= rnbinom(1,v,(alpha*(1-p))/(1+alpha*(1-p)))
+
+n = 2500 # Cuantos Datos?
+set.seed(123) #Fija la semilla: produce
+
+for(j in 2:n){
+  Zn = rnbinom(1,v,alpha/(alpha+1))
+  Wj = rgeom(rbinom(1,Xn[j-1],alpha*p),alpha/(alpha+1))
+  Xn[j] = sum(Wj) + Zn
+}
+```
+
+```{r ,  fig.width=4, fig.height=5, fig.align='center', echo=FALSE}
+par(mfrow=c(2,1))
+#media acumulada
+m <- cumsum(Xn)/seq_along(Xn) 
+ts.plot(m)
+#desviacion estandar acumulada
+r = (Xn - mean(Xn))^2
+#t = seq(1,n) 
+t = seq(1,n) - rep(1,n)
+m.sd <- sqrt(cumsum(r)/t)
+ts.plot(m.sd)
+```
+Se evidencia que el proceso es estacionarioen covarianza ya que la media tiende a una constante.  
+
+5. Es Gaussiano?. Si el proceso es gaussiano las parejas $(X_{n},X_{n-j}), j = 1, 2, 3$ deben mostrar una gráfica con forma de elipsoide. No habría normalidad bivariada si aparece por ejemplo, un hueco en el centro de la "nube", o se forma una recta ó rectas. Los datos extremos que se salen de la "nube" también contradicen la normalidad.$\\$
+Los parametros que se definieron para simular el proceso son los siguientes:
+$$v=300, p=0.5, \alpha=0.5, X_{0}=\thicksim BN(\frac{\alpha(1-p)}{(1+\alpha(1-p))},v)$$
+
+```{r , include=FALSE}
+#--------parametros del modelo
+v = 300 
+p = 0.5
+alpha = 0.5
+Xn[1]= rnbinom(1,v,(alpha*(1-p))/(1+alpha*(1-p)))
+
+n = 2500 # Cuantos Datos?
+set.seed(123) #Fija la semilla: produce
+
+for(j in 2:n){
+  Zn = rnbinom(1,v,alpha/(alpha+1))
+  Wj = rgeom(rbinom(1,Xn[j-1],alpha*p),alpha/(alpha+1))
+  Xn[j] = sum(Wj) + Zn
+}
+require(tsDyn)
+```
+
+```{r ,  fig.width=4, fig.height=5, fig.align='center', echo=FALSE}
+lag.plot(Xn, lags=3, layout=c(1,3))
+```
+Se evidencia que son normales bivariadas, ya que las graficas de una normal bivariada es similar a una elipse, y estas elipses se ven en las 3 parejas.
 
 ## CONCLUSIONES
