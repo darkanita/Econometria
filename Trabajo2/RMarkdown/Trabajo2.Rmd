@@ -1,0 +1,87 @@
+---
+title: "Trabajo No 2 de Econometría Financiera"
+subtitle: "Filtros lineales, Procesos ARMA, SARMA"
+author: "Ana María López - Pedro Pablo Villegas"
+date: "Octubre, 2017"
+citation_package: natbib
+bibliography: Trabajo2.bib
+biblio-style: apalike
+output: pdf_document
+---
+
+```{r load myData, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Estructura de Directorios
+dir.principal  <- '../'
+dir.funciones  <- '../RScripts'
+dir.markdown  <- '../RMarkdown'
+dir.input      <- '../Data/In/'
+dir.output     <- '../Data/Out/'
+library(stringr)
+library(forecast)
+library(TSA)
+library(FitAR)
+library(timsac)
+library(tseries)
+library(lmtest)
+load(paste(dir.principal,"myData.RData",sep=""))
+```
+## OBJETIVO
+El objetivo del trabajo es examinar procedimientos para decidir en cual de dos fondos
+(o activos) invertir. Cual proporciona una mejor alternativa. El analisis se basa en los
+modelos ARMA ajustados a las series de tiempo de los rendimientos de ambos fondos.
+Por lo que este es un paso que debe procurar el mejor modelo posible. Cada grupo tiene
+asignada dos (2) series con el valor de la unidad de un fondo de inversiones, en la Seccion
+4, tomadas de la pagina de la SuperFinanciera. El paso inicial es calcular los rendimientos
+logarıtmicos de ambas series.
+
+1. (30%) Ajuste modelos ARMA. Para ambas series de rendimientos encuentre el modelo ARMA que mejor ajusta. Reporte en cada caso: 1) identificacion (fac,facp) y otros procedimientos de identificacion. 2) resultado de la estimacion (tabla coeficientes con estadısticos tStudent), 3) analisis de ruido blanco de los residuos. 4) prueba de ajuste con densidad espectral.
+
+```{r ,  fig.width=6, fig.height=5, fig.align='center', echo=FALSE}
+# carga de datos
+data <- read.table(paste(dir.input,"27432 - 27431 consolidado.txt",sep=""),sep="\t")
+diversificado <- data[127:length(data$V1),1:4]
+colnames(diversificado) <- c("fecha","vlrUnidad","vlrFondo","rt30")
+accionesColombia <- data[127:length(data$V1),c(1,5:7)]
+colnames(accionesColombia) <- c("fecha","vlrUnidad","vlrFondo","rt30")
+
+#y = diff(log(rev(as.numeric(diversificado$vlrUnidad))),1,1)
+#f = as.Date(rev(as.Date(diversificado$fecha,"%m/%d/%Y")))
+
+y = diff(log(as.numeric(str_replace(diversificado$vlrUnidad,",",""))),1,1)
+f = as.Date(diversificado$fecha,"%m/%d/%Y")
+
+
+np = length(y)
+t = seq(1,np,1)
+
+ejex.mes = seq(f[1],f[np],"months")
+ejex.ano = seq(f[1],f[np],"years")
+
+par(mfrow=c(2,1))
+plot(as.Date(diversificado$fecha,"%m/%d/%Y"),as.numeric(diversificado$vlrUnidad), xaxt="n", panel.first = grid(),type='l',ylab='VFTSX: nivel',xlab='dia')
+axis.Date(1, at=ejex.mes, format="%m/%y")
+axis.Date(1, at=ejex.ano, labels = FALSE, tcl = -0.2)
+
+plot(f[-1],y, xaxt="n", panel.first = grid(),type='l',ylab='VFTSX: rendimientos',xlab='dia')
+axis.Date(1, at=ejex.mes, format="%m/%y")
+axis.Date(1, at=ejex.ano, labels = FALSE, tcl = -0.2)
+
+```
+
+
+
+
+## REFERENCIAS
+
+
+
+
+
+
+
+
+
+
+
+
